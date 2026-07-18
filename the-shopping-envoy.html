@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Shopping Envoy — Your Personal Route to Every Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg: #F8F6F1;
+    --bg-alt: #F1ECE1;
+    --card: #FCFBF8;
+    --ink: #1E2A38;
+    --ink-soft: #5B6572;
+    --emerald: #2F5D50;
+    --emerald-deep: #1F433A;
+    --gold: #B8935A;
+    --gold-light: #D9C08A;
+    --line: #DAD3C2;
+    --white: #ffffff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Manrope', sans-serif;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace; letter-spacing:0.04em;}
+  h1,h2,h3{font-family:'Fraunces', serif; font-weight:500; letter-spacing:-0.01em;}
+  a{color:inherit; text-decoration:none;}
+  .container{max-width:1180px; margin:0 auto; padding:0 32px;}
+
+  /* ---------- reveal on scroll ---------- */
+  .reveal{opacity:0; transform:translateY(28px); transition:opacity 0.8s cubic-bezier(.2,.7,.2,1), transform 0.8s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in{opacity:1; transform:translateY(0);}
+  @media (prefers-reduced-motion: reduce){
+    .reveal{opacity:1; transform:none; transition:none;}
+    *{animation:none !important; transition:none !important;}
+  }
+
+  /* ---------- nav ---------- */
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 40px;
+    transition:background 0.4s ease, padding 0.4s ease, box-shadow 0.4s ease, border-color .4s ease;
+    border-bottom:1px solid transparent;
+  }
+  nav.scrolled{
+    background:rgba(248,246,241,0.86);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    padding:14px 40px;
+    border-bottom:1px solid var(--line);
+  }
+  .logo{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .logo .seal{
+    width:26px; height:26px;
+    border:1.4px solid var(--emerald);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--emerald);
+    flex-shrink:0;
+  }
+  .nav-links{display:flex; gap:36px; align-items:center;}
+  .nav-links a{font-size:14px; font-weight:600; color:var(--ink-soft); transition:color .25s;}
+  .nav-links a:hover{color:var(--emerald);}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--emerald); color:var(--white);
+    padding:11px 22px; border-radius:100px;
+    font-size:13.5px; font-weight:700;
+    letter-spacing:0.02em;
+    border:1px solid var(--emerald);
+    cursor:pointer;
+    transition:transform .3s cubic-bezier(.2,.7,.3,1.4), background .3s, box-shadow .3s;
+  }
+  .btn:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(47,93,80,0.28);}
+  .btn-outline{
+    background:transparent; color:var(--emerald); border:1px solid var(--emerald);
+  }
+  .btn-outline:hover{background:var(--emerald); color:var(--white);}
+  .btn-gold{background:var(--gold); border-color:var(--gold); color:var(--white);}
+  .btn-gold:hover{box-shadow:0 10px 24px rgba(184,147,90,0.35);}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    padding:190px 0 120px;
+    overflow:hidden;
+  }
+  .hero-grid{
+    display:grid; grid-template-columns:1.15fr 0.85fr; gap:60px; align-items:center;
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--emerald);
+    text-transform:uppercase; letter-spacing:0.12em;
+    margin-bottom:22px;
+    padding-bottom:8px;
+    border-bottom:1px dashed var(--gold);
+  }
+  .hero h1{
+    font-size:clamp(40px, 5vw, 66px);
+    line-height:1.04;
+    color:var(--ink);
+    margin-bottom:22px;
+  }
+  .hero h1 em{
+    font-style:italic; color:var(--emerald); font-weight:400;
+  }
+  .hero p.lead{
+    font-size:18px; line-height:1.6; color:var(--ink-soft);
+    max-width:480px; margin-bottom:36px;
+  }
+  .hero-ctas{display:flex; gap:16px; margin-bottom:44px; flex-wrap:wrap;}
+  .hero-stats{display:flex; gap:38px; flex-wrap:wrap;}
+  .hero-stat .num{font-family:'Fraunces', serif; font-size:28px; color:var(--emerald);}
+  .hero-stat .label{font-size:12px; color:var(--ink-soft); font-family:'IBM Plex Mono', monospace; letter-spacing:.04em;}
+
+  /* boarding pass visual */
+  .pass{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:0 30px 70px -20px rgba(30,42,56,0.18);
+    position:relative;
+    overflow:hidden;
+    transform:rotate(2.5deg);
+    animation:floatPass 6s ease-in-out infinite;
+  }
+  @keyframes floatPass{
+    0%,100%{transform:rotate(2.5deg) translateY(0);}
+    50%{transform:rotate(2.5deg) translateY(-10px);}
+  }
+  .pass-top{
+    padding:24px 26px 20px;
+    display:flex; justify-content:space-between; align-items:flex-start;
+    border-bottom:1px dashed var(--line);
+  }
+  .pass-top .to-from{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.08em;}
+  .pass-top .city{font-family:'Fraunces', serif; font-size:22px; margin-top:4px;}
+  .pass-arrow{align-self:center; color:var(--gold); font-size:20px;}
+  .pass-mid{padding:20px 26px; display:grid; grid-template-columns:1fr 1fr; gap:16px 10px;}
+  .pass-mid .field-label{font-family:'IBM Plex Mono', monospace; font-size:9.5px; color:var(--gold); text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px;}
+  .pass-mid .field-value{font-size:14px; font-weight:700;}
+  .pass-notch{
+    position:absolute; left:-12px; top:106px;
+    width:24px; height:24px; background:var(--bg); border-radius:50%;
+    border:1px solid var(--line);
+  }
+  .pass-notch.right{left:auto; right:-12px;}
+  .pass-stub{
+    padding:18px 26px 24px; display:flex; justify-content:space-between; align-items:center;
+    background:var(--bg-alt);
+  }
+  .pass-stub .barcode{
+    display:flex; gap:2px; align-items:flex-end; height:26px;
+  }
+  .pass-stub .barcode span{display:block; width:2px; background:var(--ink); opacity:.55;}
+  .stamp{
+    position:absolute; top:18px; right:24px;
+    width:74px; height:74px;
+    border:2px solid var(--emerald);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    color:var(--emerald);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9px; font-weight:700; letter-spacing:.05em;
+    transform:rotate(-16deg) scale(0);
+    opacity:0;
+    animation:stampIn 0.5s cubic-bezier(.2,1.4,.4,1) 1s forwards;
+  }
+  @keyframes stampIn{
+    0%{transform:rotate(-16deg) scale(2.4); opacity:0;}
+    60%{opacity:1;}
+    100%{transform:rotate(-16deg) scale(1); opacity:0.9;}
+  }
+
+  /* ---------- section shell ---------- */
+  section{padding:110px 0;}
+  .section-head{max-width:640px; margin-bottom:64px;}
+  .section-tag{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--gold);
+    text-transform:uppercase; letter-spacing:.12em; margin-bottom:14px; display:block;
+  }
+  .section-head h2{font-size:clamp(28px,3.4vw,42px); line-height:1.14;}
+  .section-head p{color:var(--ink-soft); font-size:16px; margin-top:16px; line-height:1.6;}
+
+  /* ---------- route / how it works ---------- */
+  .route{position:relative;}
+  .route-line{
+    position:absolute; top:38px; left:0; right:0; height:2px;
+    background:repeating-linear-gradient(90deg, var(--gold) 0 10px, transparent 10px 20px);
+    transform:scaleX(0); transform-origin:left; transition:transform 1.4s cubic-bezier(.2,.7,.2,1);
+  }
+  .route-line.in{transform:scaleX(1);}
+  .route-steps{display:grid; grid-template-columns:repeat(5,1fr); gap:20px; position:relative;}
+  .route-step{text-align:left;}
+  .route-dot{
+    width:14px; height:14px; border-radius:50%; background:var(--emerald);
+    border:3px solid var(--bg); box-shadow:0 0 0 1px var(--emerald);
+    margin-bottom:22px; position:relative; z-index:2;
+  }
+  .route-step .idx{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--gold); margin-bottom:8px;}
+  .route-step h3{font-size:17px; margin-bottom:8px; font-weight:600;}
+  .route-step p{font-size:13.5px; color:var(--ink-soft); line-height:1.55;}
+
+  /* ---------- services / ticket cards ---------- */
+  .tickets{display:grid; grid-template-columns:repeat(2,1fr); gap:24px;}
+  .ticket{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    display:flex; overflow:hidden;
+    transition:transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s;
+  }
+  .ticket:hover{transform:translateY(-6px); box-shadow:0 24px 50px -18px rgba(30,42,56,.2);}
+  .ticket-main{flex:1; padding:28px;}
+  .ticket-main .cat{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--gold); text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px;}
+  .ticket-main h3{font-size:20px; margin-bottom:10px;}
+  .ticket-main p{font-size:14px; color:var(--ink-soft); line-height:1.6;}
+  .ticket-side{
+    width:88px; flex-shrink:0;
+    background:var(--emerald); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+    border-left:1px dashed rgba(255,255,255,0.4);
+  }
+  .ticket-side span{
+    writing-mode:vertical-rl; font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.1em;
+  }
+  .ticket-side::before, .ticket-side::after{
+    content:''; position:absolute; left:-9px; width:18px; height:18px; background:var(--bg); border-radius:50%;
+  }
+  .ticket-side::before{top:-9px;}
+  .ticket-side::after{bottom:-9px;}
+
+  /* ---------- trust badges ---------- */
+  .badges{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+  .badge{
+    border:1px solid var(--line); border-radius:14px; padding:26px 22px; background:var(--card);
+    text-align:center;
+  }
+  .badge .ring{
+    width:52px; height:52px; margin:0 auto 16px; border-radius:50%;
+    border:1.5px solid var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif; font-size:18px; color:var(--gold);
+  }
+  .badge h3{font-size:15px; margin-bottom:8px; font-family:'Manrope'; font-weight:700;}
+  .badge p{font-size:12.5px; color:var(--ink-soft); line-height:1.55;}
+
+  /* ---------- postcards / testimonials ---------- */
+  .postcards{display:grid; grid-template-columns:repeat(3,1fr); gap:24px;}
+  .postcard{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:26px; position:relative;
+    transition:transform .35s ease;
+  }
+  .postcard:hover{transform:rotate(-1deg) translateY(-4px);}
+  .postcard .stamp-mini{
+    position:absolute; top:20px; right:20px; width:38px; height:38px; border:1.5px dashed var(--gold);
+    border-radius:6px; display:flex; align-items:center; justify-content:center;
+    color:var(--gold); font-size:16px; font-family:'Fraunces', serif;
+  }
+  .postcard p.quote{font-size:14.5px; line-height:1.65; color:var(--ink); margin-bottom:22px; padding-right:36px;}
+  .postcard .who{font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft);}
+  .postcard .who b{color:var(--ink); font-family:'Manrope'; font-size:13px; display:block; margin-bottom:2px;}
+
+  /* ---------- pricing ---------- */
+  .pricing{display:grid; grid-template-columns:repeat(3,1fr); gap:24px;}
+  .price-card{
+    border:1px solid var(--line); border-radius:16px; padding:32px 28px; background:var(--card);
+    position:relative;
+  }
+  .price-card.featured{
+    background:var(--emerald-deep); color:#fff; border-color:var(--emerald-deep);
+    transform:translateY(-14px);
+    box-shadow:0 30px 60px -20px rgba(31,67,58,.45);
+  }
+  .price-card .tag{font-family:'IBM Plex Mono', monospace; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--gold); margin-bottom:14px; display:block;}
+  .price-card.featured .tag{color:var(--gold-light);}
+  .price-card h3{font-size:22px; margin-bottom:6px;}
+  .price-card .amt{font-family:'Fraunces', serif; font-size:34px; margin:14px 0 20px;}
+  .price-card ul{list-style:none; margin-bottom:26px;}
+  .price-card li{font-size:13.5px; padding:8px 0; border-top:1px dashed var(--line); color:var(--ink-soft);}
+  .price-card.featured li{border-top:1px dashed rgba(255,255,255,0.2); color:rgba(255,255,255,0.82);}
+  .price-card li:first-child{border-top:none;}
+
+  /* ---------- social / visas ---------- */
+  .visas{display:grid; grid-template-columns:repeat(3,1fr); gap:24px;}
+  .visa{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:30px 28px; text-align:center; position:relative;
+    transition:transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s;
+  }
+  .visa:hover{transform:translateY(-6px); box-shadow:0 24px 50px -18px rgba(30,42,56,.2);}
+  .visa .platform-icon{
+    width:44px; height:44px; margin:0 auto 14px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--emerald); color:#fff;
+  }
+  .visa .platform-icon svg{width:22px; height:22px;}
+  .visa .cat{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--gold); text-transform:uppercase; letter-spacing:.1em; margin-bottom:4px;}
+  .visa h3{font-size:19px; margin-bottom:4px;}
+  .visa .handle{font-size:13px; color:var(--ink-soft); margin-bottom:20px;}
+  .visa .qr-wrap{
+    width:150px; height:150px; margin:0 auto 20px; padding:10px;
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .visa .qr-wrap::before, .visa .qr-wrap::after{
+    content:''; position:absolute; width:14px; height:14px; border:1.5px solid var(--gold);
+  }
+  .visa .qr-wrap::before{top:-1px; left:-1px; border-right:none; border-bottom:none;}
+  .visa .qr-wrap::after{bottom:-1px; right:-1px; border-left:none; border-top:none;}
+  .visa .caption{font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; margin-bottom:18px;}
+  .visa .btn{width:100%; justify-content:center;}
+
+  /* footer socials */
+  .foot-socials{display:flex; gap:14px;}
+  .foot-socials a{
+    width:34px; height:34px; border-radius:50%; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
+    transition:border-color .25s, color .25s, transform .25s;
+  }
+  .foot-socials a:hover{border-color:var(--emerald); color:var(--emerald); transform:translateY(-2px);}
+  .foot-socials a svg{width:16px; height:16px;}
+
+  /* ---------- final cta ---------- */
+  .final-cta{
+    background:var(--emerald-deep); color:#fff; border-radius:26px; padding:70px 60px;
+    text-align:center; position:relative; overflow:hidden;
+  }
+  .final-cta h2{color:#fff; font-size:clamp(28px,3.6vw,44px); margin-bottom:18px;}
+  .final-cta p{color:rgba(255,255,255,.78); max-width:520px; margin:0 auto 34px; font-size:16px;}
+  .final-cta .btn{background:var(--gold); border-color:var(--gold);}
+  .final-cta .btn-outline{background:transparent; border-color:rgba(255,255,255,.5); color:#fff;}
+  .final-cta .btn-outline:hover{background:rgba(255,255,255,.12); color:#fff;}
+  .final-ctas{display:flex; gap:16px; justify-content:center; flex-wrap:wrap;}
+
+  footer{padding:60px 0 40px; border-top:1px solid var(--line); margin-top:40px;}
+  .foot-grid{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;}
+  .foot-links{display:flex; gap:26px;}
+  .foot-links a{font-size:13px; color:var(--ink-soft);}
+  .foot-links a:hover{color:var(--emerald);}
+  .foot-note{font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); margin-top:24px;}
+
+  @media (max-width:900px){
+    .hero-grid{grid-template-columns:1fr;}
+    .route-steps{grid-template-columns:repeat(2,1fr);}
+    .route-line{display:none;}
+    .tickets{grid-template-columns:1fr;}
+    .badges{grid-template-columns:repeat(2,1fr);}
+    .postcards{grid-template-columns:1fr;}
+    .visas{grid-template-columns:1fr;}
+    .pricing{grid-template-columns:1fr;}
+    .price-card.featured{transform:none;}
+    .nav-links{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="logo"><span class="seal">SE</span>The Shopping Envoy</div>
+  <div class="nav-links">
+    <a href="#route">How it works</a>
+    <a href="#services">Services</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#trust">Trust</a>
+    <a href="#follow">Follow</a>
+  </div>
+  <a href="#book" class="btn">Book a Session</a>
+</nav>
+
+<header class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow reveal">Dispatch No. 001 · Live Personal Shopping</span>
+      <h1 class="reveal">A trusted set of eyes and hands <em>inside every store</em> you can't walk into.</h1>
+      <p class="lead reveal">We walk the aisles, hold up the outfit on a live video call, and ship it to your door — anywhere in the world. No guessing on sizing. No shady catalogs. Just your own personal envoy, on the ground.</p>
+      <div class="hero-ctas reveal">
+        <a href="#book" class="btn btn-gold">Book Your First Trip</a>
+        <a href="#route" class="btn btn-outline">See How It Works</a>
+      </div>
+      <div class="hero-stats reveal">
+        <div class="hero-stat"><div class="num">30 min</div><div class="label">avg. store visit</div></div>
+        <div class="hero-stat"><div class="num">14+</div><div class="label">cities served</div></div>
+        <div class="hero-stat"><div class="num">100%</div><div class="label">approved before shipped</div></div>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="pass">
+        <div class="stamp">APPROVED<br>FOR<br>DISPATCH</div>
+        <div class="pass-notch"></div>
+        <div class="pass-notch right"></div>
+        <div class="pass-top">
+          <div>
+            <div class="to-from">Boutique</div>
+            <div class="city">Lahore</div>
+          </div>
+          <div class="pass-arrow">✈</div>
+          <div>
+            <div class="to-from">Your door</div>
+            <div class="city">Anywhere</div>
+          </div>
+        </div>
+        <div class="pass-mid">
+          <div>
+            <div class="field-label">Client</div>
+            <div class="field-value">S. Ahmed</div>
+          </div>
+          <div>
+            <div class="field-label">Session</div>
+            <div class="field-value">Live Video Call</div>
+          </div>
+          <div>
+            <div class="field-label">Item</div>
+            <div class="field-value">Bridal Wear</div>
+          </div>
+          <div>
+            <div class="field-label">Status</div>
+            <div class="field-value">Packed &amp; Sealed</div>
+          </div>
+        </div>
+        <div class="pass-stub">
+          <div class="mono" style="font-size:11px; color:var(--ink-soft);">ENV·2201·PK</div>
+          <div class="barcode" id="barcode"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="route" class="route">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">The Route</span>
+      <h2>From store shelf to your doorstep, in five stops.</h2>
+      <p>Every order follows the same itinerary — so you always know exactly where things stand.</p>
+    </div>
+    <div style="position:relative;">
+      <div class="route-line reveal"></div>
+      <div class="route-steps">
+        <div class="route-step reveal">
+          <div class="route-dot"></div>
+          <div class="idx">01 · BOOK</div>
+          <h3>You tell us the store</h3>
+          <p>Send your wishlist, budget, and sizes — or just the mall you want walked.</p>
+        </div>
+        <div class="route-step reveal">
+          <div class="route-dot"></div>
+          <div class="idx">02 · WALK</div>
+          <h3>We enter the store</h3>
+          <p>Your envoy arrives in person, camera ready, at the time you choose.</p>
+        </div>
+        <div class="route-step reveal">
+          <div class="route-dot"></div>
+          <div class="idx">03 · CALL</div>
+          <h3>You shop live</h3>
+          <p>A video call so you can see fabric, fit, and finish before deciding anything.</p>
+        </div>
+        <div class="route-step reveal">
+          <div class="route-dot"></div>
+          <div class="idx">04 · APPROVE</div>
+          <h3>You approve &amp; pay</h3>
+          <p>Once you say yes on camera, the sale is confirmed and packing begins.</p>
+        </div>
+        <div class="route-step reveal">
+          <div class="route-dot"></div>
+          <div class="idx">05 · ARRIVE</div>
+          <h3>It reaches you</h3>
+          <p>Quality-checked, folded to save on shipping, and tracked to your door.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="services" style="background:var(--bg-alt);">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">Services</span>
+      <h2>Four ways to travel through us.</h2>
+      <p>Pick a single errand or hand us the whole wardrobe.</p>
+    </div>
+    <div class="tickets">
+      <div class="ticket reveal">
+        <div class="ticket-main">
+          <div class="cat">Personal Shopping</div>
+          <h3>Single-Store Visit</h3>
+          <p>One store, one live call, one outfit sorted — perfect for a quick, specific pickup.</p>
+        </div>
+        <div class="ticket-side"><span>SE·01</span></div>
+      </div>
+      <div class="ticket reveal">
+        <div class="ticket-main">
+          <div class="cat">Concierge</div>
+          <h3>Full-Day Wardrobe Consultation</h3>
+          <p>Multiple stores, one day, a complete look built store to store with you on the line throughout.</p>
+        </div>
+        <div class="ticket-side"><span>SE·02</span></div>
+      </div>
+      <div class="ticket reveal">
+        <div class="ticket-main">
+          <div class="cat">Quality Control</div>
+          <h3>Unboxing &amp; Quality Check</h3>
+          <p>We check for loose threads, stains, and faults before it ever leaves the store — then pack it beautifully.</p>
+        </div>
+        <div class="ticket-side"><span>SE·03</span></div>
+      </div>
+      <div class="ticket reveal">
+        <div class="ticket-main">
+          <div class="cat">Tailoring</div>
+          <h3>Local Stitching &amp; Customization</h3>
+          <p>Unstitched fabric, stitched to your exact measurements by our partner tailors before it ships.</p>
+        </div>
+        <div class="ticket-side"><span>SE·04</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">The Fine Print, Made Plain</span>
+      <h2>Clear terms, so nothing gets lost in transit.</h2>
+    </div>
+    <div class="badges">
+      <div class="badge reveal">
+        <div class="ring">✓</div>
+        <h3>Final on Approval</h3>
+        <p>Once you approve on the live call, the order is confirmed — we're a shopping service, not a storefront.</p>
+      </div>
+      <div class="badge reveal">
+        <div class="ring">₨</div>
+        <h3>All-Inclusive Advance</h3>
+        <p>Item cost, service fee, and estimated shipping — collected upfront, no surprises later.</p>
+      </div>
+      <div class="badge reveal">
+        <div class="ring">□</div>
+        <h3>Volumetric Packing</h3>
+        <p>We fold smart to minimize box size, because couriers charge by volume, not just weight.</p>
+      </div>
+      <div class="badge reveal">
+        <div class="ring">⚑</div>
+        <h3>Customs on Buyer</h3>
+        <p>Import duties and destination taxes are the buyer's responsibility — stated clearly, every time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--bg-alt);">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">Postcards</span>
+      <h2>Notes from clients, mailed back to us.</h2>
+    </div>
+    <div class="postcards">
+      <div class="postcard reveal">
+        <div class="stamp-mini">SE</div>
+        <p class="quote">"I was in Toronto, my sister was in the fitting room in Lahore over video call. The dress arrived exactly as we saw it — stitched to size."</p>
+        <div class="who"><b>Hina R.</b>Toronto, Canada</div>
+      </div>
+      <div class="postcard reveal">
+        <div class="stamp-mini">SE</div>
+        <p class="quote">"Booked a full-day run before my wedding. Four stores, one call each, everything packed and on a flight by evening."</p>
+        <div class="who"><b>Bilal K.</b>Manchester, UK</div>
+      </div>
+      <div class="postcard reveal">
+        <div class="stamp-mini">SE</div>
+        <p class="quote">"They caught a loose thread on a kurta before it even left the store. That's the kind of eye you can't get from a catalog."</p>
+        <div class="who"><b>Sara M.</b>Dubai, UAE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">Pricing</span>
+      <h2>Pay for the trip you actually need.</h2>
+    </div>
+    <div class="pricing">
+      <div class="price-card reveal">
+        <span class="tag">Per Store</span>
+        <h3>Single Visit</h3>
+        <div class="amt">Rs 2,500</div>
+        <ul>
+          <li>One store, one live call</li>
+          <li>Up to 30 minutes on camera</li>
+          <li>Quality check included</li>
+        </ul>
+        <a href="#book" class="btn btn-outline" style="width:100%; justify-content:center;">Book This</a>
+      </div>
+      <div class="price-card featured reveal">
+        <span class="tag">Most Booked</span>
+        <h3>Full-Day Wardrobe</h3>
+        <div class="amt">Rs 12,000</div>
+        <ul>
+          <li>Up to 5 stores, one day</li>
+          <li>Priority scheduling</li>
+          <li>Tailoring coordination included</li>
+        </ul>
+        <a href="#book" class="btn btn-gold" style="width:100%; justify-content:center;">Book This</a>
+      </div>
+      <div class="price-card reveal">
+        <span class="tag">Large Hauls</span>
+        <h3>Percentage Plan</h3>
+        <div class="amt">7% of bill</div>
+        <ul>
+          <li>Best for high-value orders</li>
+          <li>No cap on stores visited</li>
+          <li>Dedicated envoy assigned</li>
+        </ul>
+        <a href="#book" class="btn btn-outline" style="width:100%; justify-content:center;">Book This</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="follow" style="background:var(--bg-alt);">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-tag">Visa Stamps</span>
+      <h2>Follow the envoy between trips.</h2>
+      <p>Scan a stamp or tap through — behind-the-scenes store runs, live unboxings, and drop-offs, posted as they happen.</p>
+    </div>
+    <div class="visas">
+      <div class="visa reveal">
+        <div class="platform-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20zm4.4-5.9c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1s-.7.8-.9 1c-.2.2-.3.2-.5.1a6.6 6.6 0 0 1-1.9-1.2 7.1 7.1 0 0 1-1.3-1.6c-.1-.2 0-.4.1-.5l.4-.5c.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5s-.6-1.5-.9-2c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.6 1.1 2.8.1.2 1.9 2.9 4.6 4a15 15 0 0 0 1.5.6c.7.2 1.3.2 1.7.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>
+        </div>
+        <div class="cat">WhatsApp</div>
+        <h3>Chat With Us</h3>
+        <div class="handle">Fastest way to book a session</div>
+        <div class="qr-wrap"><div id="qr-whatsapp"></div></div>
+        <div class="caption">Scan with your camera</div>
+        <a href="https://wa.me/qr/ONXPIVTMMKBXE1" target="_blank" rel="noopener" class="btn btn-gold">Open WhatsApp</a>
+      </div>
+      <div class="visa reveal">
+        <div class="platform-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 2 .3 2.4.5a4.9 4.9 0 0 1 1.8 1.1 4.9 4.9 0 0 1 1.1 1.8c.2.4.4 1.2.5 2.4.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 2-.5 2.4a4.9 4.9 0 0 1-1.1 1.8 4.9 4.9 0 0 1-1.8 1.1c-.4.2-1.2.4-2.4.5-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-2-.3-2.4-.5a4.9 4.9 0 0 1-1.8-1.1 4.9 4.9 0 0 1-1.1-1.8c-.2-.4-.4-1.2-.5-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-2 .5-2.4a4.9 4.9 0 0 1 1.1-1.8 4.9 4.9 0 0 1 1.8-1.1c.4-.2 1.2-.4 2.4-.5C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.1-1 .1-1.6.2-1.9.4-.5.2-.8.4-1.2.7-.3.4-.5.7-.7 1.2-.1.3-.3.9-.4 1.9-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c.1 1 .2 1.6.4 1.9.2.5.4.8.7 1.2.4.3.7.5 1.2.7.3.1.9.3 1.9.4 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1-.1 1.6-.2 1.9-.4.5-.2.8-.4 1.2-.7.3-.4.5-.7.7-1.2.1-.3.3-.9.4-1.9.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1-.2-1.6-.4-1.9a3.1 3.1 0 0 0-.7-1.2 3.1 3.1 0 0 0-1.2-.7c-.3-.1-.9-.3-1.9-.4-1.2-.1-1.6-.1-4.7-.1zm0 3.1a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zm5.2-2a1.2 1.2 0 1 1-2.3 0 1.2 1.2 0 0 1 2.3 0z"/></svg>
+        </div>
+        <div class="cat">Instagram</div>
+        <h3>@the_shopping_envoy</h3>
+        <div class="handle">Store runs &amp; unboxings</div>
+        <div class="qr-wrap"><div id="qr-instagram"></div></div>
+        <div class="caption">Scan with your camera</div>
+        <a href="https://www.instagram.com/the_shopping_envoy?utm_source=qr&igsh=MWNoMHcwaWRnczFy" target="_blank" rel="noopener" class="btn btn-outline">Open Instagram</a>
+      </div>
+      <div class="visa reveal">
+        <div class="platform-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 2h-3.3v14.1a2.8 2.8 0 1 1-2.3-2.8v-3.4a6.2 6.2 0 1 0 5.6 6.2V8.7a7.6 7.6 0 0 0 4.4 1.4V6.8a4.3 4.3 0 0 1-4.4-4.4z"/></svg>
+        </div>
+        <div class="cat">TikTok</div>
+        <h3>@theshoopingenvoy2</h3>
+        <div class="handle">Behind the scenes, on the move</div>
+        <div class="qr-wrap"><div id="qr-tiktok"></div></div>
+        <div class="caption">Scan with your camera</div>
+        <a href="https://www.tiktok.com/@theshoopingenvoy2?_r=1&_t=ZS-988ZYk3e0n7" target="_blank" rel="noopener" class="btn btn-outline">Open TikTok</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="book">
+  <div class="container">
+    <div class="final-cta reveal">
+      <span class="eyebrow" style="color:var(--gold-light); border-color:var(--gold-light);">Ready When You Are</span>
+      <h2>Send us the store. We'll do the walking.</h2>
+      <p>Message us your city, your wishlist, and a time that works — your first live session can be booked within 24 hours.</p>
+      <div class="final-ctas">
+        <a href="#" class="btn">Message on WhatsApp</a>
+        <a href="#" class="btn btn-outline">View Full Price List</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="logo"><span class="seal">SE</span>The Shopping Envoy</div>
+      <div class="foot-links">
+        <a href="#route">How it works</a>
+        <a href="#services">Services</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#trust">Terms</a>
+      </div>
+      <div class="foot-socials">
+        <a href="https://wa.me/qr/ONXPIVTMMKBXE1" target="_blank" rel="noopener" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20zm4.4-5.9c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1s-.7.8-.9 1c-.2.2-.3.2-.5.1a6.6 6.6 0 0 1-1.9-1.2 7.1 7.1 0 0 1-1.3-1.6c-.1-.2 0-.4.1-.5l.4-.5c.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5s-.6-1.5-.9-2c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.6 1.1 2.8.1.2 1.9 2.9 4.6 4a15 15 0 0 0 1.5.6c.7.2 1.3.2 1.7.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/the_shopping_envoy?utm_source=qr&igsh=MWNoMHcwaWRnczFy" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 2 .3 2.4.5a4.9 4.9 0 0 1 1.8 1.1 4.9 4.9 0 0 1 1.1 1.8c.2.4.4 1.2.5 2.4.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 2-.5 2.4a4.9 4.9 0 0 1-1.1 1.8 4.9 4.9 0 0 1-1.8 1.1c-.4.2-1.2.4-2.4.5-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-2-.3-2.4-.5a4.9 4.9 0 0 1-1.8-1.1 4.9 4.9 0 0 1-1.1-1.8c-.2-.4-.4-1.2-.5-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-2 .5-2.4a4.9 4.9 0 0 1 1.1-1.8 4.9 4.9 0 0 1 1.8-1.1c.4-.2 1.2-.4 2.4-.5C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.1-1 .1-1.6.2-1.9.4-.5.2-.8.4-1.2.7-.3.4-.5.7-.7 1.2-.1.3-.3.9-.4 1.9-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c.1 1 .2 1.6.4 1.9.2.5.4.8.7 1.2.4.3.7.5 1.2.7.3.1.9.3 1.9.4 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1-.1 1.6-.2 1.9-.4.5-.2.8-.4 1.2-.7.3-.4.5-.7.7-1.2.1-.3.3-.9.4-1.9.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1-.2-1.6-.4-1.9a3.1 3.1 0 0 0-.7-1.2 3.1 3.1 0 0 0-1.2-.7c-.3-.1-.9-.3-1.9-.4-1.2-.1-1.6-.1-4.7-.1zm0 3.1a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zm5.2-2a1.2 1.2 0 1 1-2.3 0 1.2 1.2 0 0 1 2.3 0z"/></svg>
+        </a>
+        <a href="https://www.tiktok.com/@theshoopingenvoy2?_r=1&_t=ZS-988ZYk3e0n7" target="_blank" rel="noopener" aria-label="TikTok">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 2h-3.3v14.1a2.8 2.8 0 1 1-2.3-2.8v-3.4a6.2 6.2 0 1 0 5.6 6.2V8.7a7.6 7.6 0 0 0 4.4 1.4V6.8a4.3 4.3 0 0 1-4.4-4.4z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="foot-note">© 2026 THE SHOPPING ENVOY — DISPATCHED FROM LAHORE, DELIVERED EVERYWHERE.</div>
+  </div>
+</footer>
+
+<script>
+  // nav background on scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.15});
+  revealEls.forEach(el => io.observe(el));
+
+  // route line trigger
+  const routeLine = document.querySelector('.route-line');
+  if(routeLine){
+    const io2 = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); });
+    }, {threshold:0.3});
+    io2.observe(routeLine);
+  }
+
+  // QR codes, styled to match the site palette
+  function makeQR(elId, url){
+    const el = document.getElementById(elId);
+    if(!el || typeof QRCode === 'undefined') return;
+    new QRCode(el, {
+      text: url,
+      width: 130,
+      height: 130,
+      colorDark: '#1E2A38',
+      colorLight: '#FCFBF8',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+  makeQR('qr-whatsapp', 'https://wa.me/qr/ONXPIVTMMKBXE1');
+  makeQR('qr-instagram', 'https://www.instagram.com/the_shopping_envoy?utm_source=qr&igsh=MWNoMHcwaWRnczFy');
+  makeQR('qr-tiktok', 'https://www.tiktok.com/@theshoopingenvoy2?_r=1&_t=ZS-988ZYk3e0n7');
+
+  // fake barcode
+  const barcode = document.getElementById('barcode');
+  if(barcode){
+    for(let i=0;i<22;i++){
+      const bar = document.createElement('span');
+      bar.style.height = (8 + Math.random()*18) + 'px';
+      barcode.appendChild(bar);
+    }
+  }
+</script>
+
+</body>
+</html>
